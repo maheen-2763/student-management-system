@@ -4,15 +4,30 @@ namespace App\Http\Controllers;
 
 use App\Models\student;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class StudentController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $students = Student::latest()->get();
+        $search = $request->input('search');
+
+     $search = $request->input('search');
+
+$students = Student::where('user_id', Auth::id())
+    ->when($search, function ($query, $search) {
+        $query->where(function ($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+              ->orWhere('email', 'like', "%{$search}%");
+        });
+    })
+    ->paginate(10);
+
+
+
         return view('students.index', compact('students'));
     }
 
@@ -35,7 +50,10 @@ class StudentController extends Controller
             'age' => 'required|integer|min:0',
         ]);
 
-        Student::create($request->only(['name', 'email', 'age']));
+        $student = new Student($request->only(['name', 'email', 'age']));
+        $student->user_id = Auth::id();
+        $student->save();
+
         return redirect()->route('students.index')->with('success', 'Student created successfully.');
 
     }

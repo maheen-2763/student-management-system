@@ -1,6 +1,6 @@
 <h3>All Students</h3>
 
-<a href="{{ route('students.create') }}">Add Student</a>
+
 
 @if (session('success'))
     <p style="color: green;">{{ session('success') }}</p>       
@@ -13,6 +13,17 @@
         @endforeach
     </ul>
 @endif
+
+<form method="GET" action="{{ route('students.index') }}">
+    <input type="text" name="search" placeholder="Search by name or email" value="{{ request('search') }}">
+    <input type="submit" value="Search">
+</form> 
+
+<a href="{{ route('students.create') }}">Add Student</a>
+<br>
+<br>
+
+<a href="{{ route('export.students', ['search' => request('search')]) }}">Export to Excel</a>
 
 <table border="1">
     <tr>
@@ -38,4 +49,7 @@
         </td>
     </tr>
     @endforeach
+
+    {{ $students->appends(['search' => request('search')])->links() }}
+
 </table>
