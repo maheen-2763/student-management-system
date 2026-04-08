@@ -18,13 +18,13 @@ class StudentsExport implements WithHeadings, FromQuery
 
     public function headings(): array
     {
-        return ['ID', 'Name', 'Email', 'Age', 'Created At', 'Updated At'];
+        return ['ID', 'Name', 'Email', 'Age', 'Image', 'Created At', 'Updated At'];
     }
 
     public function query(): \Illuminate\Database\Eloquent\Builder
     {
         return Student::query()
-            ->select('id', 'name', 'email', 'age', 'created_at', 'updated_at')
+            ->select('id', 'name', 'email', 'age', 'image', 'created_at', 'updated_at')
             ->where('user_id', Auth::id())
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
