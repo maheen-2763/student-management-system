@@ -1,37 +1,35 @@
-FROM php:8.4-apache
+# Use PHP 8.4
+FROM php:8.4-cli
 
-# Install dependencies
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
-    libpq-dev \
-    libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
     unzip \
     git \
     curl \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo pdo_pgsql gd
+    libzip-dev \
+    libpq-dev \
+    && docker-php-ext-install zip pdo pdo_pgsql
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Set working directory
-WORKDIR /var/www/html
+WORKDIR /app
 
-# Copy files
+# Copy project files
 COPY . .
 
 # Install Laravel dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Enable Apache rewrite
-RUN a2enmod rewrite
+# Generate application key
+RUN php artisan key:generate
 
-# Permissions
-RUN chown -R www-data:www-data storage bootstrap/cache
+# Cache config for performance
+RUN php artisan config:cache
 
-# Expose port
-EXPOSE 80
+# Expose port (Render uses 10000 internally)
+EXPOSE 10000
 
-# Start server
-CMD ["apache2-foreground"]
+# Start Laravel server
+CMD php -S 0.0.0.0:10000 -t public
