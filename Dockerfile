@@ -33,4 +33,5 @@ ENV PORT=10000
 EXPOSE 10000
 
 # Start server using the environment variable
-CMD ["sh", "-c", "php -S 0.0.0.0:$PORT -t public"]
+# We use 'sh -c' to run multiple commands in sequence
+CMD sh -c "php artisan migrate --force && php -S 0.0.0.0:10000 -t public"
