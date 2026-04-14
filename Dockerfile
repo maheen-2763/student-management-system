@@ -1,4 +1,3 @@
-# Use PHP 8.4
 FROM php:8.4-cli
 
 # Install system dependencies
@@ -8,7 +7,11 @@ RUN apt-get update && apt-get install -y \
     curl \
     libzip-dev \
     libpq-dev \
-    && docker-php-ext-install zip pdo pdo_pgsql
+    libpng-dev \
+    libjpeg62-turbo-dev \
+    libfreetype6-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) zip pdo pdo_pgsql gd
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -19,17 +22,15 @@ WORKDIR /app
 # Copy project files
 COPY . .
 
-# Install Laravel dependencies
-RUN composer install --no-dev --optimize-autoloader
+# Install dependencies (no-interaction is key for CI/CD)
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Generate application key
-RUN php artisan key:generate
+# Set permissions for Laravel (Essential for Render)
+RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
 
-# Cache config for performance
-RUN php artisan config:cache
-
-# Expose port (Render uses 10000 internally)
+# Render uses port 10000 by default, but we'll use an ENV to be safe
+ENV PORT=10000
 EXPOSE 10000
 
-# Start Laravel server
-CMD php -S 0.0.0.0:10000 -t public
+# Start server using the environment variable
+CMD ["sh", "-c", "php -S 0.0.0.0:$PORT -t public"]
