@@ -1,13 +1,16 @@
-# Use PHP with Apache
-FROM php:8.2-apache
+FROM php:8.4-apache
 
-# Install system dependencies
+# Install dependencies
 RUN apt-get update && apt-get install -y \
     libpq-dev \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
     unzip \
     git \
     curl \
-    && docker-php-ext-install pdo pdo_pgsql
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo pdo_pgsql gd
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -15,20 +18,20 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy project files
+# Copy files
 COPY . .
 
 # Install Laravel dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Set Apache config
+# Enable Apache rewrite
 RUN a2enmod rewrite
 
-# Set correct permissions
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+# Permissions
+RUN chown -R www-data:www-data storage bootstrap/cache
 
 # Expose port
 EXPOSE 80
 
-# Start Apache
+# Start server
 CMD ["apache2-foreground"]
