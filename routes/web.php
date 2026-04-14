@@ -24,9 +24,6 @@ Route::middleware('auth')->group(function () {
     Route::resource('students', \App\Http\Controllers\StudentController::class);
     });
 
-
-
-
 Route::get('/export-students', function (Request $request) {
     return Excel::download(new StudentsExport($request->input('search')), 'students.xlsx');
 })->name('export.students');

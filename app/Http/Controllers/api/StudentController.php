@@ -1,78 +1,91 @@
 <?php
 
-namespace App\Http\Controllers\api;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\student;
+use App\Models\Student;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\StoreStudentRequest;
+use App\Http\Requests\UpdateStudentRequest;
+use App\Http\Resources\StudentResource;
 
 class StudentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        $students = Student::all();
-        return response()->json($students);
+    // GET /api/students
+    public function index(Request $request)
+{
+
+    $query = Student::where('user_id', Auth::id());
+
+    if($request->filled('search')) {
+        $search = $request->input('search');
+        $query->where(function($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+            ->orWhere('email', 'like', "%{$search}%");  
+        });
     }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:students',
-            'age' => 'required|integer|min:0',
-        ]);
-        
-       
-
-        $student = Student::create($request->only(['name', 'email', 'age']));
-
-        return response()->json(['student' => $student],  201);
+    if($request->sort == "oldest") {
+        $query->oldest();
+    } else {
+        $query->latest();
 
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(student $student)
-    {
-        //
-    }
+    $students = $query->paginate(10);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(student $student)
-    {
-        //
-    }
+    return successResponse([
+        'students' => StudentResource::collection($students),
+        'meta' => [
+            'current_page' => $students->currentPage(),
+            'last_page' => $students->lastPage(),
+            'per_page' => $students->perPage(),
+            'total' => $students->total(),
+        ]
+    ]);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, student $student)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(student $student)
-    {
-        //
-    }
+    
 }
+
+    // POST /api/students
+    public function store(StoreStudentRequest $request)
+    {
+        $validated = $request->validated();
+
+        $student = Student::create([
+            'user_id' => Auth::id(),
+            'name' => $validated['name'],   
+            'email' => $validated['email'],
+            'age' => $validated['age'],
+        ]);
+        return successResponse(new StudentResource($student), 'Student created successfully');
+    }
+
+    // GET /api/students/{id}
+    public function show($id)
+    {
+        $student = Student::where('user_id', Auth::id())->findOrFail($id);
+ 
+        return successResponse(new StudentResource($student), 'Student retrieved successfully');
+    }
+    // PUT /api/students/{id}
+    public function update(UpdateStudentRequest $request, $id)
+    {
+        $student = Student::where('user_id', Auth::id())->findOrFail($id);
+      
+        $student->update($request->validated());
+
+        return successResponse(new StudentResource($student), 'Student updated successfully');
+    }
+
+    // DELETE /api/students/{id}
+    public function destroy($id)
+{
+    $student = Student::where('user_id', Auth::id())->findOrFail($id);
+
+    $student->delete();
+
+    return successResponse(null, 'Student deleted successfully');
+}
+}
+
