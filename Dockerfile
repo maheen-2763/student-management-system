@@ -26,7 +26,7 @@ COPY . .
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 # Set permissions for Laravel (Essential for Render)
-RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
+RUN chmod -R 775 /app/storage /app/bootstrap/cache
 
 # Render uses port 10000 by default, but we'll use an ENV to be safe
 ENV PORT=10000
