@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 });
 
 
