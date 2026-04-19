@@ -10,6 +10,7 @@ use App\Http\Requests\StoreStudentRequest;
 use App\Http\Requests\UpdateStudentRequest;
 use App\Http\Resources\StudentResource;
 
+
 class StudentController extends Controller
 {
     // GET /api/students
