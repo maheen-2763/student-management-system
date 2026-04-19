@@ -24,6 +24,9 @@ COPY . .
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
+# Create storage symlink
+RUN php artisan storage:link
+
 # Install Node dependencies & build Vite assets
 RUN npm install && npm run build
 
