@@ -36,12 +36,6 @@ class StudentController extends Controller
 
     return successResponse([
         'students' => StudentResource::collection($students),
-        'meta' => [
-            'current_page' => $students->currentPage(),
-            'last_page' => $students->lastPage(),
-            'per_page' => $students->perPage(),
-            'total' => $students->total(),
-        ]
     ]);
 
     

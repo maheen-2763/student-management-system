@@ -23,8 +23,8 @@ class UpdateStudentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'sometimes|required|string|max:255',
-            'email' => 'sometimes|required|email|unique:students,email,' . $this->route('id'),
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:students,email,' . $this->id,
             'age' => 'nullable|integer',
         ];
     }

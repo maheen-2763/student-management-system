@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Resources\SuccessResponse;
 
 class AuthController extends Controller
 {
@@ -26,11 +27,10 @@ class AuthController extends Controller
 
         $token = $user->createToken('api-token')->plainTextToken;
 
-        return response()->json([
-            'status' => true,
+        return successResponse([
             'token' => $token,
             'user' => $user
-        , "message" => "User registered successfully"]);
+        ], 'User registered successfully');
     }
 
     // LOGIN
@@ -52,12 +52,11 @@ class AuthController extends Controller
 
         $token = $user->createToken('api-token')->plainTextToken;
 
-        return response()->json([
-            'status' => true,
+        return successResponse([
             'token' => $token,
             'user' => $user
-        ]);
-    }
+        ], 'User logged in successfully', 201);
+    }   
 
     // LOGOUT
     public function logout(Request $request)
@@ -67,6 +66,6 @@ class AuthController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Logged out successfully'
-        ]);
+        ], 200);
     }
 }
