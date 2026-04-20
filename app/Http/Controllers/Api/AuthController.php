@@ -30,7 +30,7 @@ class AuthController extends Controller
         return successResponse([
             'token' => $token,
             'user' => $user
-        ], 'User registered successfully');
+        ], 'User registered successfully', 201);
     }
 
     // LOGIN
@@ -55,7 +55,7 @@ class AuthController extends Controller
         return successResponse([
             'token' => $token,
             'user' => $user
-        ], 'User logged in successfully', 201);
+        ], 'User logged in successfully', 200);
     }   
 
     // LOGOUT
